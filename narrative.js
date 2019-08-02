@@ -190,11 +190,11 @@ var Chart = function(container) {
                 return Math.abs($this.y_scale(d.actual_max_temp) - $this.y_scale(d.actual_min_temp))
               })
               .transition()
-                .duration(7000)
+                .duration(5000)
                 //.delay(3000)
                 .ease(d3.easeLinear)
                 .attr("stroke-dashoffset", 0)
-              .attr('width', 2)
+              .attr('width', 1)
               //.attr('transform', function(d, i){
               //  return "translate(" + $this.x_scale(d.date) + ',' + $this.y_scale(d.actual_max_temp) + ')'
               //})
@@ -235,7 +235,7 @@ var Chart = function(container) {
               .attr('height', function(d, i) {
                 return Math.abs($this.y_scale(d.record_max_temp) - $this.y_scale(d.record_min_temp))
               })
-              .attr('width', 2)
+              .attr('width', 1)
               .transition()
                 .duration(3000)
                 .ease(d3.easeSin)
@@ -406,7 +406,7 @@ var Chart = function(container) {
 var Narrative = function() {
   var $this = this;
 
-  $this.baseURL = '/cs498-dv/data/'
+  $this.baseURL = './data/'
 
   $this.currentState = 'SLIDESHOW';
   $this.currentScene = 0;
@@ -450,13 +450,9 @@ var Narrative = function() {
   $this.scenes = [];
 
   $this.svg = d3.select('svg')
-  // 'KMDW.csv'
+
   $this.chart = null;
 
-  $this.currentChart = null;
-
-  $this.chart = new Chart($this.svg);
-  $this.chart.initialize();
   $this.runningSlideshow = false;
 
   selectElement = d3.select('select')
@@ -522,6 +518,8 @@ var Narrative = function() {
 
   this.run = function() {
     bindButtons();
+    $this.chart = new Chart($this.svg);
+    $this.chart.initialize();
   }
 
   hideNextButton = function() {
