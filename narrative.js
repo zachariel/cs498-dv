@@ -406,7 +406,7 @@ var Chart = function(container) {
 var Narrative = function() {
   var $this = this;
 
-  $this.baseURL = '/data/'
+  $this.baseURL = '/cs498-dv/data/'
 
   $this.currentState = 'SLIDESHOW';
   $this.currentScene = 0;
