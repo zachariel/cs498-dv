@@ -11,10 +11,15 @@ var Chart = function(container) {
   $this.ticks = null;
   $this.title = null;
   $this.annotation = null;
+  $this.displayPopups = false;
 
   $this.svg  = container;
 
   timeBetweenSlides = 10000
+
+  $this.enablePopups = function() {
+    $this.displayPopups = true;
+  }
 
   $this.setTitle = function(title) {
     $this.title = title;
@@ -38,11 +43,11 @@ var Chart = function(container) {
   }
 
   initializeYscale = function() {
-    let minTemp = d3.min($this.data, function(d) { return d.record_min_temp; });
-    let maxTemp = d3.max($this.data, function(d) { return d.actual_max_temp; });
+    let minTemp = Math.floor(d3.min($this.data, function(d) { return d.record_min_temp; })/10) * 10 - 10;
+    let maxTemp = Math.ceil(d3.max($this.data, function(d) { return d.actual_max_temp; }) / 10) * 10 + 20;;
 
-    $this.y_scale = d3.scaleLinear().domain([minTemp - 5, maxTemp + 20]).range([$this.graphSize.height, 0]);
-    $this.ticks = d3.range(minTemp - 5, maxTemp + 20, 10)
+    $this.y_scale = d3.scaleLinear().domain([minTemp, maxTemp]).range([$this.graphSize.height, 0]);
+    $this.ticks = d3.range(minTemp, maxTemp, 10)
 
   }
 
@@ -145,21 +150,28 @@ var Chart = function(container) {
       el.attr('x', 0).attr('dy', dy)
     })
 
-
     container.attr('width', text.node().getBBox().width + margin)
          .attr('height', text.node().getBBox().height + margin)
 
     return popup;
   }
 
-  showPopup = function() {
+  onMouseMove = function() {
+    if (!$this.displayPopups) {
+      return false
+    }
+
     d3.event.preventDefault();
     let coordinates = d3.mouse(this);
     let rect = arguments[2][arguments[1]]
     let datum = arguments[0];
 
+    showPopup(datum, coordinates[0], coordinates[1])
+  }
+
+  showPopup = function(datum, x, y) {
     popup = popupDetails(datum)
-    var popupCoordinates = { x: ($this.graphSize.x + coordinates[0]), y: ($this.graphSize.y + coordinates[1]) }
+    var popupCoordinates = { x: ($this.graphSize.x + x), y: ($this.graphSize.y + y) }
 
     if(popupCoordinates.x > $this.graphSize.width) {
       popupCoordinates.x -= popup.node().getBBox().width
@@ -170,11 +182,23 @@ var Chart = function(container) {
     }
 
     popup.attr('transform', 'translate(' + popupCoordinates.x + ',' + popupCoordinates.y + ')')
-
+          .attr('opacity', 0)
+          .transition()
+            .duration(3000)
+            //.delay(3000)
+            .ease(d3.easeLinear)
+            .attr("stroke-dashoffset", 0)
+          .attr('opacity', 1)
   }
 
   hidePopup = function() {
     $this.svg.select('#popup').attr('opacity', 0);
+  }
+
+  showPopupSample = function() {
+    idx = Math.floor(Math.random() * 365) + 1;
+    datum = $this.data[idx]
+    showPopup(datum, $this.x_scale(datum.date), $this.y_scale(datum.record_max_temp))
   }
 
   drawActualTemp = function(plotArea) {
@@ -182,7 +206,7 @@ var Chart = function(container) {
             .data($this.data)
             .enter()
               .append('rect')
-              .on('mousemove', showPopup)
+              .on('mousemove', onMouseMove)
               //.on('mouseout', hidePopup)
               .attr('x', function(d, i){ return $this.x_scale(d.date)})
               .attr('y', function(d, i){ return $this.y_scale(d.actual_max_temp) } )
@@ -205,7 +229,7 @@ var Chart = function(container) {
             .data($this.data)
             .enter()
               .append('rect')
-              .on('mousemove', showPopup)
+              .on('mousemove', onMouseMove)
               //.on('mouseout', hidePopup)
               .attr('x', function(d, i){ return $this.x_scale(d.date)})
               .attr('height', function(d, i) {
@@ -226,7 +250,7 @@ var Chart = function(container) {
             .data($this.data)
             .enter()
               .append('rect')
-              .on('mousemove', showPopup)
+              .on('mousemove', onMouseMove)
               //.on('mouseleave', hidePopup)
               .attr('x', function(d, i){ return $this.x_scale(d.date)})
               //.attr('width', function(d, i) {
@@ -287,6 +311,10 @@ var Chart = function(container) {
     drawActualTemp($this.plotArea.append('g').attr('id', plot3Id));
 
     drawAnnotation($this.plotArea)
+
+    if (!$this.displayPopups) {
+      showPopupSample();
+    }
   }
 
   fireFinishEvent = function() {
@@ -460,7 +488,7 @@ var Narrative = function() {
   selectListener = function() {
     var sceneIndex = eval(d3.select(this).property('value'));
     $this.currentScene = sceneIndex;
-    $this.scenes[sceneIndex].show()
+    displayScene()
   }
 
   addSelectOption = function(scene) {
@@ -563,10 +591,15 @@ var Narrative = function() {
         console.log('running slideshow finished')
         $this.runingSlideshow = false;
         $this.currentState = 'OPEN';
+        getCurrentScene().freeNavigation()
         d3.select('#buttons').style('display', 'block')
         showPrevButton();
       }
     }
+  }
+
+  getCurrentScene = function() {
+    return $this.scenes[$this.currentScene]
   }
 
   displayScene = function() {
@@ -624,7 +657,15 @@ var Scene = function(data, city, chart) {
   $this.city = city;
   $this.chart = chart;
 
-  $this.show = function() {
+  $this.freeNavigation = function() {
+    $this.chart.enablePopups();
+  }
+
+  $this.show = function(currentState) {
+    if(currentState == 'OPEN') {
+      $this.freeNavigation()
+    }
+
     $this.chart.setAnnotation(city.annotation)
     $this.chart.setTitle(city.name + ' weather, July 2014 - June 2015');
     $this.chart.setData($this.data);
