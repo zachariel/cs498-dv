@@ -21,6 +21,8 @@ main div, footer {
 
 footer {
   clear: both;
+  margin-top: 100px;
+  text-align: right;
 }
 
 button {

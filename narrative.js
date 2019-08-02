@@ -634,10 +634,4 @@ var Scene = function(data, city, chart) {
                             })
                           )
   }
-
-  $this.hide = function() {
-  }
-
-  $this.run = function() {
-  }
 }
