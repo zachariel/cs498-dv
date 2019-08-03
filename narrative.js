@@ -130,7 +130,7 @@ var Chart = function(container) {
                      .attr('stroke', '#000')
 
     let formatDate = d3.timeFormat("%m/%d/%Y")
-    var dy = "1.1em"
+    var dy = "1.2em"
     var content = []
     let margin = 20
 
@@ -153,13 +153,16 @@ var Chart = function(container) {
     container.attr('width', text.node().getBBox().width + margin)
          .attr('height', text.node().getBBox().height + margin)
 
+    popup.on('click', function() {
+      if ($this.displayPopups)
+        hidePopup()
+    })
+
     return popup;
   }
 
   onMouseMove = function() {
-    if (!$this.displayPopups) {
-      return false
-    }
+    if (!$this.displayPopups) return false
 
     d3.event.preventDefault();
     let coordinates = d3.mouse(this);
@@ -431,12 +434,16 @@ var Chart = function(container) {
 }
 
 var Narrative = function() {
-  var $this = this;
+  const $this = this;
 
   $this.baseURL = './data/'
 
   $this.currentState = 'SLIDESHOW';
   $this.currentScene = 0;
+  $this.scenes = [];
+  $this.chart = null;
+  $this.runningSlideshow = false;
+  $this.svg = d3.select('svg')
 
   let cities = [
                 {
@@ -477,16 +484,6 @@ var Narrative = function() {
                                "of December setting a record high."]
                 }
               ]
-
-  let cityKeys = Object.keys(cities);
-
-  $this.scenes = [];
-
-  $this.svg = d3.select('svg')
-
-  $this.chart = null;
-
-  $this.runningSlideshow = false;
 
   selectElement = d3.select('select')
 
