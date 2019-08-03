@@ -31,11 +31,9 @@ button {
 }
 
 button.next {
-  float: right;
 }
 
 button.prev {
-  float: left;
 }
 
 .line {
@@ -81,4 +79,30 @@ button.prev {
 
 #buttons {
   display: none;
+}
+
+#buttons .left,
+#buttons .right {
+  width:25%;
+  display: inline-block;
+  button {
+    display: inline-block;
+  }
+}
+
+.left {
+  text-align: left;
+}
+
+.right {
+  text-align: right;
+}
+
+select {
+  width: 150px;
+}
+#city-changer {
+  display: inline-block;
+  margin: 0;
+  width: 49%;
 }

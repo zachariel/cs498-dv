@@ -439,26 +439,30 @@ var Narrative = function() {
   $this.currentState = 'SLIDESHOW';
   $this.currentScene = 0;
 
-  let cities = {
-                "KMDW": {
+  let cities = [
+                {
+                  code: 'KMDW',
                   name: "Chicago",
                   annotation: ["Chicago had an unexpectedly cold February,",
                                "when temperatures returned to single digits",
                                "and two days reached a record-setting low."]
                 },
-                "KHOU": {
+                {
+                  code: 'KHOU',
                   name: "Houston",
                   annotation: ["Houston\u00B4s temperatures sat around the",
                                "average for the most part, except for an",
                                "odd cold spike in November."]
                 },
-                "KCLT": {
+                {
+                  code: 'KCLT',
                   name: "Charlotte",
                   annotation: ["Charlotte, North Carolina, had a particularly",
                                "uncomfortable June this year, with five days",
                                "setting record highs in the upper 90s."]
                 },
-                "KCQT": {
+                {
+                  code: 'KCQT',
                   name: "Los Angeles",
                   annotation: ["Los Angeles -- famous for its year-round",
                                "just-right temperatures -- experienced several",
@@ -466,13 +470,15 @@ var Narrative = function() {
                                "had four days with record highs when the",
                                "temperature soared into the 90s."]
                 },
-                "KSEA": {
+                {
+                  code: 'KSEA',
                   name: "Seatle",
                   annotation: ["Seattle experienced a strangely warm",
                                "winter, with 12 days since the beginning",
                                "of December setting a record high."]
                 }
-              }
+              ]
+
   let cityKeys = Object.keys(cities);
 
   $this.scenes = [];
@@ -498,21 +504,20 @@ var Narrative = function() {
   }
 
   initializeScene = function(data, city) {
-    sceneIndex = $this.scenes.push(new Scene(data, city, $this.chart))
-    sceneIndex--
+    sceneIndex = $this.scenes.push(new Scene(data, city, $this.chart)) - 1
 
     addSelectOption($this.scenes[sceneIndex]);
     selectElement.on('change', selectListener)
 
+    document.addEventListener("chart-finish-animation", sceneFinished, false);
+    document.addEventListener("scene-displayed", onSceneDisplayed, false);
     if (!runningSlideshowAuto() && $this.currentScene == 0) {
-      document.addEventListener("chart-finish-animation", sceneFinished, false);
-      document.addEventListener("scene-displayed", onSceneDisplayed, false);
       slideshow();
     }
   }
 
   sceneFinished = function() {
-    if (runningSlideshowAuto() && $this.currentScene < (cityKeys.length - 1)) {
+    if (runningSlideshowAuto() && $this.currentScene < (cities.length - 1)) {
       console.log('scene finished')
       $this.currentScene++;
       slideshow();
@@ -524,9 +529,7 @@ var Narrative = function() {
       datum.date = new Date(datum.date);
       keys = Object.keys(datum)
       keys.forEach(function(key) {
-        if(key != 'date') {
-          datum[key] = +datum[key];
-        }
+        if(key != 'date') datum[key] = +datum[key]
       });
       return datum
     }).then(function(data) {
@@ -534,9 +537,9 @@ var Narrative = function() {
     });
   }
 
-  cityKeys.forEach(function(key) {
-    let url = $this.baseURL + key + '.csv';
-    downloadFile(url, cities[key], initializeScene);
+  cities.forEach(function(city) {
+    let url = $this.baseURL + city.code + '.csv';
+    downloadFile(url, city, initializeScene);
   });
 
   bindButtons = function() {
@@ -562,12 +565,12 @@ var Narrative = function() {
 
   showNextButton = function() {
     d3.select('#buttons .next')
-      .style('display', 'block');
+      .style('display', 'inline-block');
   }
 
   showPrevButton = function() {
     d3.select('#buttons .prev')
-      .style('display', 'block');
+      .style('display', 'inline-block');
   }
 
   runningSlideshowAuto = function() {
@@ -580,14 +583,14 @@ var Narrative = function() {
     hideNextButton();
     displayScene();
 
-    if (runningSlideshowAuto() && $this.currentScene < (cityKeys.length - 1)) {
+    if (runningSlideshowAuto() && $this.currentScene < (cities.length - 1)) {
       console.log('running slideshow')
       //setTimeout(function(){
       //  $this.currentScene++;
       //  slideshow();
       //}, 1000)
     } else {
-      if ($this.currentScene == (cityKeys.length - 1)) {
+      if ($this.currentScene == (cities.length - 1)) {
         console.log('running slideshow finished')
         $this.runingSlideshow = false;
         $this.currentState = 'OPEN';

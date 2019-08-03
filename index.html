@@ -10,20 +10,25 @@
   <body>
     <article>
       <header>
-        <h1>Narrative Visualization</h1>
         <h2>University of Illinois: MCS-DS</h2>
         <h3>cs498 Data Visualization</h3>
+        <h1>Narrative Visualization</h1>
       </header>
       <main>
         <svg>
           <!--g id="plot"></g-->
         </svg>
         <div id='buttons'>
-          <button class='prev'><< Prev</button>
-          <span>Change to city:</span>
-          <select>
-          </select>
-          <button class='next'>Next >></button>
+          <span class='left'>
+            <button class='prev'><< Prev</button>
+          </span>
+          <span id="city-changer">
+            <span>Change to city:</span>
+            <select></select>
+          </span>
+          <span class='right'>
+            <button class='next'>Next >></button>
+          </span>
         </div>
       </main>
       <footer>
