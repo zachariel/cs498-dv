@@ -15,7 +15,7 @@ var Chart = function(container) {
 
   $this.svg  = container;
 
-  timeBetweenSlides = 10000
+  timeBetweenSlides = 7000
 
   $this.enablePopups = function() {
     $this.displayPopups = true;
